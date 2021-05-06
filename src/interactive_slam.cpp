@@ -71,6 +71,10 @@ public:
     graph.reset(new InteractiveGraphView());
     graph->init_gl();
 
+    // initialize the mapping graph
+    mappinggraph.reset(new InteractiveMappingView());
+    mappinggraph->init_gl();
+
     // initialize sub-windows and modals
     version_modal.reset(new VersionModal());
     graph_edit_window.reset(new GraphEditWindow(graph));
@@ -173,6 +177,9 @@ public:
 
       // draw pose graph
       graph->draw(draw_flags, *main_canvas->shader);
+
+      //draw mapping 
+      mappinggraph->draw(draw_flags, *main_canvas->shader);
 
       // let the windows draw something on the main canvas
       plane_detection_window->draw_gl(*main_canvas->shader);
@@ -337,6 +344,7 @@ private:
     /*** Mapping menu ***/
     if(ImGui::BeginMenu("Mapping")) {
       if(ImGui::MenuItem("Start Mapping")) {
+        start_mapping();
       }
 
       ImGui::EndMenu();
@@ -374,6 +382,22 @@ private:
     edge_refinement_window->close();
     plane_detection_window->close();
     plane_alignment_modal->close();
+  }
+
+  /**
+   * @brief start mapping
+   * @param start_mapping
+   */
+  void start_mapping()
+  {
+    // open the progress modal and load the graph in a background thread
+    progress->open<std::shared_ptr<InteractiveMappingView>>("start mapping", [=](guik::ProgressInterface& p) {
+      std::shared_ptr<InteractiveMappingView> mappinggraph(new InteractiveMappingView());
+      if(!mappinggraph->start_mapping(p)) {
+        return std::shared_ptr<InteractiveMappingView>();
+      }
+      return mappinggraph;
+    });
   }
   /**
    * @brief open raw data

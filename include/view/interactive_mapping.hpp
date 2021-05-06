@@ -26,6 +26,8 @@ public:
 
   bool load_map_data(const std::string& directory, guik::ProgressInterface& progress);
 
+  bool start_mapping(guik::ProgressInterface& progress);
+
   std::unordered_map<long, InteractiveKeyFrame::Ptr> keyframes;
 };
 
