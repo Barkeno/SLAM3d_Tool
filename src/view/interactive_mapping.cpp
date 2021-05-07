@@ -38,12 +38,14 @@ bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
   rosbag::View view(bag, rosbag::TopicQuery(topics));
   rosbag::View::iterator it = view.begin();
   
+  int keycount = 0;
   mapOpt.startLoopClosure();
 
   while(it !=  view.end())
   {
     auto m = *it;
     ++it;
+    keycount++;
     std::string topic = m.getTopic();
 
     if(topic == "/rslidar_points")
@@ -64,12 +66,13 @@ bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
         image.resetParameters();
 
 
-        // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(keyframe_dir, graph.get());
+        InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapSurfCloud, PoseAftMapped);
+        keyframes[keycount] = keyframe;
         // if(!keyframe->node) {
         //   std::cerr << "error : failed to load keyframe!!" << std::endl;
         //   std::cerr << "      : " << keyframe_dir << std::endl;
         // } else {
-        //   keyframes[keyframe->id()] = keyframe;
+          // keyframes[keyframe->id()] = keyframe;
         //   progress.increment();
         // }
 
