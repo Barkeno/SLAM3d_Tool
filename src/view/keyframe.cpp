@@ -21,6 +21,7 @@ KeyFrame::KeyFrame(const std::string& directory, g2o::HyperGraph* graph) :  odom
 KeyFrame::KeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped)
 {
   
+  cloud = mapSurfCloud.makeShared();
 }
 
 KeyFrame::~KeyFrame() {}

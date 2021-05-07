@@ -33,6 +33,7 @@ InteractiveMapping::~InteractiveMapping() {
 bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
 {
   rosbag::Bag bag;
+  bag.open(file_directory, rosbag::bagmode::Read);
   std::vector<std::string> topics;
   topics.push_back(std::string("/rslidar_points"));
   rosbag::View view(bag, rosbag::TopicQuery(topics));
@@ -93,7 +94,7 @@ bool InteractiveMapping::load_map_data(const std::string& directory, guik::Progr
   for(int i = 0; i < 10; i++)
   {
     progress.increment();
-    sleep(1);
+    sleep(0.5);
   }
    // load keyframes
   
