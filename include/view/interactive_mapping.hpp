@@ -29,6 +29,8 @@ public:
   bool start_mapping(guik::ProgressInterface& progress);
 
   std::unordered_map<long, InteractiveKeyFrame::Ptr> keyframes;
+
+  std::string file_directory;
 };
 
 #endif

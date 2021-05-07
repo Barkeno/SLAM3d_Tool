@@ -21,13 +21,7 @@
 
 #include <view/interactive_mapping.hpp>
 #include <view/interactive_mapping_view.hpp>
-#include "imageProjection.h"
-#include "featureAssociation.h"
-#include "mapOptmization.h"
 
-lego_loam::ImageProjection image;
-lego_loam::FeatureAssociation feature;
-lego_loam::mapOptimization mapOpt;
 #define DEFAULT_PATH "./"
 // #include <ros/package.h>
 

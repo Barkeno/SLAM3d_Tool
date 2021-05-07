@@ -29,6 +29,24 @@ link_directories(${G2O_LIBRARY_DIRS})
 find_package(OpenCV REQUIRED QUIET)
 find_package(GTSAM REQUIRED QUIET)
 
+find_package(catkin REQUIRED COMPONENTS
+  tf
+  roscpp
+  rospy
+  cv_bridge
+  image_transport
+  rosbag_storage
+  rosbag
+
+  pcl_ros
+  pcl_conversions
+
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  nav_msgs
+)
+
 
 ###########
 ## Build ##
