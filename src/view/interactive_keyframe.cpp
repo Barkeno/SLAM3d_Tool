@@ -16,6 +16,14 @@ InteractiveKeyFrame::InteractiveKeyFrame(const std::string& directory, g2o::Hype
   kdtree_ = kdtree;
 }
 
+InteractiveKeyFrame::InteractiveKeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped) 
+: KeyFrame(mapSurfCloud, PoseAftMapped)
+{
+  pcl::search::KdTree<pcl::PointXYZI>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZI>());
+  kdtree->setInputCloud(cloud);
+  kdtree_ = kdtree;
+}
+
 InteractiveKeyFrame::~InteractiveKeyFrame() {
 
 }

@@ -18,6 +18,11 @@ KeyFrame::KeyFrame(const std::string& directory, g2o::HyperGraph* graph) :  odom
   load(directory, graph);
 }
 
+KeyFrame::KeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped)
+{
+  
+}
+
 KeyFrame::~KeyFrame() {}
 
 void KeyFrame::save(const std::string& directory) {

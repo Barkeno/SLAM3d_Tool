@@ -35,8 +35,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   cv_bridge
   image_transport
-  rosbag_storage
-  rosbag
 
   pcl_ros
   pcl_conversions

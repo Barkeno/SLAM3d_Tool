@@ -26,6 +26,7 @@ public:
 
   // KeyFrame(const ros::Time& stamp, const Eigen::Isometry3d& odom, double accum_distance, const pcl::PointCloud<PointT>::ConstPtr& cloud);
   KeyFrame(const std::string& directory, g2o::HyperGraph* graph);
+  KeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped);
   virtual ~KeyFrame();
 
   void save(const std::string& directory);

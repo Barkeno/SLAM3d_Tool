@@ -19,6 +19,7 @@
 lego_loam::ImageProjection image;
 lego_loam::FeatureAssociation feature;
 lego_loam::mapOptimization mapOpt;
+std::string file_directory;
 
 
 InteractiveMapping::InteractiveMapping(){
@@ -32,7 +33,6 @@ InteractiveMapping::~InteractiveMapping() {
 bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
 {
   rosbag::Bag bag;
-  bag.open(file_directory, rosbag::bagmode::Read);
   std::vector<std::string> topics;
   topics.push_back(std::string("/rslidar_points"));
   rosbag::View view(bag, rosbag::TopicQuery(topics));
@@ -58,14 +58,20 @@ bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
         float PoseAftMapped[6];
 
         image.loadPointCloud(pcs);
-        cv::Mat img1 = image.intensityMat;
-        cv::namedWindow("rangeImage",1);
-//                cv::resize(img1,img1,cv::Size(img1.cols,img1.rows),0,0,cv::INTER_LINEAR);
-        cv::imshow("rangeImage", img1);
 
         feature.featureOdometry(image);
         mapOpt.mapBuild(feature, pcs, mapCornerCloud, mapSurfCloud, PoseAftMapped);
         image.resetParameters();
+
+
+        // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(keyframe_dir, graph.get());
+        // if(!keyframe->node) {
+        //   std::cerr << "error : failed to load keyframe!!" << std::endl;
+        //   std::cerr << "      : " << keyframe_dir << std::endl;
+        // } else {
+        //   keyframes[keyframe->id()] = keyframe;
+        //   progress.increment();
+        // }
 
     }
 
@@ -77,10 +83,7 @@ bool InteractiveMapping::load_map_data(const std::string& directory, guik::Progr
   // load graph file
   progress.set_title("Opening " + directory);
   progress.increment();
-  
   progress.set_text("loading dataset");
-  std::cout << "Load dataset : " << directory << std::endl;\
-
   file_directory = directory;
 
   progress.set_maximum(10);

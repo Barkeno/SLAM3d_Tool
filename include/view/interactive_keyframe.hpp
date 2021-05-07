@@ -12,6 +12,9 @@ public:
   using Ptr = std::shared_ptr<InteractiveKeyFrame>;
 
   InteractiveKeyFrame(const std::string& directory, g2o::HyperGraph* graph);
+
+  InteractiveKeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped);
+  
   virtual ~InteractiveKeyFrame() override;
 
   std::vector<int> neighbors(const Eigen::Vector3f& pt, double radius);
