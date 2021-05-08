@@ -109,14 +109,6 @@ void InteractiveMapping::mapping()
           InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
           mappingkeyframes[0] = keyframe;
 
-          // if(!keyframe->node) {
-          //   std::cerr << "error : failed to load keyframe!!" << std::endl;
-          //   std::cerr << "      : " << keyframe_dir << std::endl;
-          // } else {
-            // keyframes[keyframe->id()] = keyframe;
-          //   progress.increment();
-          // }
-
       }
 
     }
