@@ -341,6 +341,10 @@ private:
         start_mapping();
       }
 
+      if(ImGui::MenuItem("Stop Mapping")) {
+        stop_mapping();
+      }
+
       ImGui::EndMenu();
     }
 
@@ -384,15 +388,38 @@ private:
    */
   void start_mapping()
   {
-    // open the progress modal and load the graph in a background thread
-    progress->open<std::shared_ptr<InteractiveMappingView>>("start mapping", [=](guik::ProgressInterface& p) {
-      std::shared_ptr<InteractiveMappingView> mappinggraph(new InteractiveMappingView());
-      if(!mappinggraph->start_mapping(p)) {
-        return std::shared_ptr<InteractiveMappingView>();
+    // show the progress modal until loading will be finished
+    if(progress->run("mapping")) {
+      auto result = progress->result<std::shared_ptr<InteractiveMappingView>>();
+      if(result == nullptr) {
+        pfd::message message("Error", "failed to mapping", pfd::choice::ok);
+        while(!message.ready()) {
+          usleep(100);
+        }
+        return;
       }
-      return mappinggraph;
-    });
+
+      // initialize OpenGL stuffs in this main thread
+      result->init_gl();
+      mappinggraph = result;
+    }
+
+    // open the progress modal and load the graph in a background thread
+    // progress->open<std::shared_ptr<InteractiveMappingView>>("start mapping", [=](guik::ProgressInterface& p) {
+    //   std::shared_ptr<InteractiveMappingView> mappinggraph(new InteractiveMappingView());
+    //   if(!mappinggraph->start_mapping(p)) {
+    //     return std::shared_ptr<InteractiveMappingView>();
+    //   }
+    //   return mappinggraph;
+    // });
+    mappinggraph->start_mapping();
   }
+
+  void stop_mapping()
+  {
+    mappinggraph->stop_mapping();
+  }
+
   /**
    * @brief open raw data
    * @param open_dialog

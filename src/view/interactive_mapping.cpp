@@ -23,14 +23,39 @@ std::string file_directory;
 
 
 InteractiveMapping::InteractiveMapping(){
-  
+  running = false;
 }
 
 InteractiveMapping::~InteractiveMapping() {
-  
+  if (running) {
+    running = false;
+  }
+
+  if (mapping_thread.joinable()) {
+    mapping_thread.join();
+  }
 }
 
-bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
+bool InteractiveMapping::start_mapping()
+{
+  if (!running) {
+      running = true;
+      mapping_thread = std::thread([&]() { mapping(); });
+    }
+  return true;
+}
+
+bool InteractiveMapping::stop_mapping()
+{
+  if (running) {
+      running = false;
+      mapping_thread.join();
+      std::cout << "end mapping!" << std::endl;
+    }
+  return true;
+}
+
+void InteractiveMapping::mapping()
 {
   rosbag::Bag bag;
   bag.open(file_directory, rosbag::bagmode::Read);
@@ -42,45 +67,60 @@ bool InteractiveMapping::start_mapping(guik::ProgressInterface& progress)
   int keycount = 0;
   mapOpt.startLoopClosure();
 
-  while(it !=  view.end())
+  while (running) 
   {
-    auto m = *it;
-    ++it;
-    keycount++;
-    std::string topic = m.getTopic();
-
-    if(topic == "/rslidar_points")
+    if(it !=  view.end())
     {
-        pcl::PCLPointCloud2 *pointCloud2 = new pcl::PCLPointCloud2;
-        sensor_msgs::PointCloud2ConstPtr pclmsg = m.instantiate<sensor_msgs::PointCloud2>();
-        pcl_conversions::toPCL(*pclmsg, *pointCloud2);
-        pcl::PointCloud<pcl::PointXYZI> pcs;
-        pcl::fromPCLPointCloud2(*pointCloud2, pcs);
+      auto m = *it;
+      ++it;
+      keycount++;
+      std::string topic = m.getTopic();
 
-        pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud;
-        float PoseAftMapped[6];
+      if(topic == "/rslidar_points")
+      {
+          pcl::PCLPointCloud2 *pointCloud2 = new pcl::PCLPointCloud2;
+          sensor_msgs::PointCloud2ConstPtr pclmsg = m.instantiate<sensor_msgs::PointCloud2>();
+          pcl_conversions::toPCL(*pclmsg, *pointCloud2);
+          pcl::PointCloud<pcl::PointXYZI> pcs;
+          pcl::fromPCLPointCloud2(*pointCloud2, pcs);
 
-        image.loadPointCloud(pcs);
+          pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud;
+          float PoseAftMapped[6];
 
-        feature.featureOdometry(image);
-        mapOpt.mapBuild(feature, pcs, mapCornerCloud, mapSurfCloud, PoseAftMapped);
-        image.resetParameters();
+          image.loadPointCloud(pcs);
+
+          feature.featureOdometry(image);
+          mapOpt.mapBuild(feature, pcs, mapCornerCloud, mapSurfCloud, PoseAftMapped);
+          
+          image.resetParameters();
+          for(int i = 0; i < mapCornerCloud.size(); i++)
+          {
+            float tempx, tempy, tempz;
+            tempx = mapCornerCloud[i].x;
+            tempy = mapCornerCloud[i].y;
+            tempz = mapCornerCloud[i].z;
+            mapCornerCloud[i].x = tempz;
+            mapCornerCloud[i].y = tempx;
+            mapCornerCloud[i].z = tempy;
+          }
 
 
-        InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapSurfCloud, PoseAftMapped);
-        keyframes[keycount] = keyframe;
-        // if(!keyframe->node) {
-        //   std::cerr << "error : failed to load keyframe!!" << std::endl;
-        //   std::cerr << "      : " << keyframe_dir << std::endl;
-        // } else {
-          // keyframes[keyframe->id()] = keyframe;
-        //   progress.increment();
-        // }
+          std::lock_guard<std::mutex> lock(mapping_mutex);
+          InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
+          mappingkeyframes[0] = keyframe;
+
+          // if(!keyframe->node) {
+          //   std::cerr << "error : failed to load keyframe!!" << std::endl;
+          //   std::cerr << "      : " << keyframe_dir << std::endl;
+          // } else {
+            // keyframes[keyframe->id()] = keyframe;
+          //   progress.increment();
+          // }
+
+      }
 
     }
-
   }
-  
 }
 
 bool InteractiveMapping::load_map_data(const std::string& directory, guik::ProgressInterface& progress) {

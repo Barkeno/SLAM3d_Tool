@@ -12,6 +12,7 @@
 #include <view/keyframe_view.hpp>
 #include <view/line_buffer.hpp>
 #include <view/drawable_object.hpp>
+#include <view/mapping_keyframe_view.hpp>
 
 
 class InteractiveMappingView : public InteractiveMapping {
@@ -23,30 +24,32 @@ public:
 
   void update_view() {
     bool keyframe_inserted = false;
-    for (const auto& key_item : keyframes) {
+    std::cout << "mappingKeyframes: " << mappingkeyframes.size() << std::endl;
+    for (const auto& key_item : mappingkeyframes) {
       auto& keyframe = key_item.second;
       // auto found = keyframes_view_map.find(keyframe);
       // if (found == keyframes_view_map.end()) {
         keyframe_inserted = true;
-        keyframes_view.push_back(std::make_shared<KeyFrameView>(keyframe));
+        keyframes_view.push_back(std::make_shared<MappingKeyFrameView>(keyframe));
         keyframes_view_map[keyframe] = keyframes_view.back();
 
-        vertices_view.push_back(keyframes_view.back());
-        vertices_view_map[keyframe->id()] = keyframes_view.back();
+        // vertices_view.push_back(keyframes_view.back());
+        // vertices_view_map[keyframe->id()] = keyframes_view.back();
 
         drawables.push_back(keyframes_view.back());
       // }
     }
 
-    if (keyframe_inserted) {
-      std::sort(keyframes_view.begin(), keyframes_view.end(), [=](const KeyFrameView::Ptr& lhs, const KeyFrameView::Ptr& rhs) { return lhs->lock()->id() < rhs->lock()->id(); });
-    }
+    // if (keyframe_inserted) {
+    //   std::sort(keyframes_view.begin(), keyframes_view.end(), [=](const KeyFrameView::Ptr& lhs, const KeyFrameView::Ptr& rhs) { return lhs->lock()->id() < rhs->lock()->id(); });
+    // }
 
   }
 
     
 
   void draw(const DrawFlags& flags, glk::GLSLShader& shader) {
+    std::lock_guard<std::mutex> lock(mapping_mutex);
     update_view();
     line_buffer->clear();
 
@@ -64,8 +67,8 @@ public:
 public:
   std::unique_ptr<LineBuffer> line_buffer;
 
-  std::vector<KeyFrameView::Ptr> keyframes_view;
-  std::unordered_map<InteractiveKeyFrame::Ptr, KeyFrameView::Ptr> keyframes_view_map;
+  std::vector<MappingKeyFrameView::Ptr> keyframes_view;
+  std::unordered_map<InteractiveKeyFrame::Ptr, MappingKeyFrameView::Ptr> keyframes_view_map;
 
   std::vector<VertexView::Ptr> vertices_view;
   std::unordered_map<long, VertexView::Ptr> vertices_view_map;

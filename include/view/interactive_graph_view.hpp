@@ -23,6 +23,7 @@ public:
 
   void update_view() {
     bool keyframe_inserted = false;
+
     for (const auto& key_item : keyframes) {
       auto& keyframe = key_item.second;
       auto found = keyframes_view_map.find(keyframe);

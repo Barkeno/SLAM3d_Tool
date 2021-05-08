@@ -26,9 +26,16 @@ public:
 
   bool load_map_data(const std::string& directory, guik::ProgressInterface& progress);
 
-  bool start_mapping(guik::ProgressInterface& progress);
+  bool start_mapping();
+  bool stop_mapping();
+  void mapping();
 
-  std::unordered_map<long, InteractiveKeyFrame::Ptr> keyframes;
+  std::unordered_map<long, InteractiveKeyFrame::Ptr> mappingkeyframes;
+
+  std::mutex mapping_mutex;
+  std::thread mapping_thread;
+
+  std::atomic_bool running;
 };
 
 #endif
