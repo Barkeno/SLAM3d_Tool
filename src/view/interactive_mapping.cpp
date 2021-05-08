@@ -112,6 +112,7 @@ void InteractiveMapping::mapping()
       }
 
     }
+    usleep(100);
   }
 }
 
