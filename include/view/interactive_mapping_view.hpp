@@ -24,25 +24,16 @@ public:
 
   void update_view() {
     bool keyframe_inserted = false;
-    std::cout << "mappingKeyframes: " << mappingkeyframes.size() << std::endl;
+    // std::cout << "mappingKeyframes: " << mappingkeyframes.size() << std::endl;
+    drawables.clear();
+    keyframes_view.clear();
+
     for (const auto& key_item : mappingkeyframes) {
       auto& keyframe = key_item.second;
-      // auto found = keyframes_view_map.find(keyframe);
-      // if (found == keyframes_view_map.end()) {
-        keyframe_inserted = true;
-        keyframes_view.push_back(std::make_shared<MappingKeyFrameView>(keyframe));
-        keyframes_view_map[keyframe] = keyframes_view.back();
-
-        // vertices_view.push_back(keyframes_view.back());
-        // vertices_view_map[keyframe->id()] = keyframes_view.back();
-
-        drawables.push_back(keyframes_view.back());
-      // }
+      
+      drawables.resize(1);
+      drawables[0] = std::make_shared<MappingKeyFrameView>(keyframe);
     }
-
-    // if (keyframe_inserted) {
-    //   std::sort(keyframes_view.begin(), keyframes_view.end(), [=](const KeyFrameView::Ptr& lhs, const KeyFrameView::Ptr& rhs) { return lhs->lock()->id() < rhs->lock()->id(); });
-    // }
 
   }
 

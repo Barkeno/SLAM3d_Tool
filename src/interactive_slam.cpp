@@ -163,11 +163,11 @@ public:
       coord.draw(*main_canvas->shader);
 
       // draw grid
-      main_canvas->shader->set_uniform("color_mode", 1);
-      main_canvas->shader->set_uniform("model_matrix", (Eigen::Translation3f(Eigen::Vector3f::UnitZ() * -0.02) * Eigen::Isometry3f::Identity()).matrix());
-      main_canvas->shader->set_uniform("material_color", Eigen::Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
-      const auto& grid = glk::Primitives::instance()->primitive(glk::Primitives::GRID);
-      grid.draw(*main_canvas->shader);
+      // main_canvas->shader->set_uniform("color_mode", 1);
+      // main_canvas->shader->set_uniform("model_matrix", (Eigen::Translation3f(Eigen::Vector3f::UnitZ() * -0.02) * Eigen::Isometry3f::Identity()).matrix());
+      // main_canvas->shader->set_uniform("material_color", Eigen::Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
+      // const auto& grid = glk::Primitives::instance()->primitive(glk::Primitives::GRID);
+      // grid.draw(*main_canvas->shader);
 
       // draw pose graph
       graph->draw(draw_flags, *main_canvas->shader);
@@ -696,6 +696,9 @@ private:
     clear_selections();
     graph.reset(new InteractiveGraphView());
     graph->init_gl();
+
+    mappinggraph.reset(new InteractiveMappingView());
+    mappinggraph->init_gl();
   }
 
   /**

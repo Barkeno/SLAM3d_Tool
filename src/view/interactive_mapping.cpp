@@ -49,6 +49,10 @@ bool InteractiveMapping::stop_mapping()
 {
   if (running) {
       running = false;
+      mapOpt.endLoopClosure();
+      mapOpt.allocateMemory();
+      image.resetParameters();
+
       mapping_thread.join();
       std::cout << "end mapping!" << std::endl;
     }
@@ -106,8 +110,9 @@ void InteractiveMapping::mapping()
 
 
           std::lock_guard<std::mutex> lock(mapping_mutex);
-          InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
-          mappingkeyframes[0] = keyframe;
+          // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
+          // mappingkeyframes[0] = keyframe;
+          mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
 
       }
 
