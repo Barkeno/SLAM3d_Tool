@@ -5,6 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
+#include <atomic>
 
 #include <guik/progress_interface.hpp>
 
