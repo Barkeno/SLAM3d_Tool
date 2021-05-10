@@ -25,7 +25,7 @@ public:
   InteractiveMapping();
   virtual ~InteractiveMapping();
 
-  bool load_map_data(const std::string& directory, guik::ProgressInterface& progress);
+  bool load_raw_data(const std::string& directory, guik::ProgressInterface& progress);
 
   bool start_mapping();
   bool stop_mapping();

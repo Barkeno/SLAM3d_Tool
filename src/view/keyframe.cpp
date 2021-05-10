@@ -21,6 +21,14 @@ KeyFrame::KeyFrame(const std::string& directory, g2o::HyperGraph* graph) :  odom
 KeyFrame::KeyFrame(pcl::PointCloud<pcl::PointXYZI> mapSurfCloud, float* PoseAftMapped)
 { 
   cloud = mapSurfCloud.makeShared();
+  Eigen::Translation3d pose(PoseAftMapped[5], PoseAftMapped[3], PoseAftMapped[4]);
+  Eigen::Matrix4d odom_mat = Eigen::Matrix4d::Identity();
+  
+  odom_mat(0, 3) = PoseAftMapped[5];
+  odom_mat(1, 3) = PoseAftMapped[3];
+  odom_mat(2, 3) = PoseAftMapped[4];
+  odom.setIdentity();
+  odom.translation() = odom_mat.block<3, 1>(0, 3);
 }
 
 KeyFrame::~KeyFrame() {}

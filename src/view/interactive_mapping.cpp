@@ -121,27 +121,19 @@ void InteractiveMapping::mapping()
   }
 }
 
-bool InteractiveMapping::load_map_data(const std::string& directory, guik::ProgressInterface& progress) {
+bool InteractiveMapping::load_raw_data(const std::string& directory, guik::ProgressInterface& progress) {
   // load graph file
   progress.set_title("Opening " + directory);
   progress.increment();
   progress.set_text("loading dataset");
   file_directory = directory;
 
-  progress.set_maximum(10);
-  for(int i = 0; i < 10; i++)
+  progress.set_maximum(3);
+  for(int i = 0; i < 3; i++)
   {
     progress.increment();
-    sleep(0.5);
-  }
-   // load keyframes
-  
-  progress.set_text("loading keyframes");
-  
-
-  // // load keyframes
-  // progress.increment();
-  // progress.set_text("loading keyframes");
+    sleep(1);
+  } 
 
   return true;
 }

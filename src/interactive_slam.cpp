@@ -483,7 +483,7 @@ private:
     // open the progress modal and load the graph in a background thread
     progress->open<std::shared_ptr<InteractiveMappingView>>("dataset load", [=](guik::ProgressInterface& p) {
       std::shared_ptr<InteractiveMappingView> mappinggraph(new InteractiveMappingView());
-      if(!mappinggraph->load_map_data(input_graph_filename, p)) {
+      if(!mappinggraph->load_raw_data(input_graph_filename, p)) {
         return std::shared_ptr<InteractiveMappingView>();
       }
       return mappinggraph;
