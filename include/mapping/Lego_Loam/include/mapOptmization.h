@@ -58,7 +58,7 @@ using namespace gtsam;
 
 class mapOptimization{
 
-private:
+public:
 
     NonlinearFactorGraph gtSAMgraph;
     Values initialEstimate;
@@ -72,6 +72,7 @@ private:
     noiseModel::Base::shared_ptr robustNoiseModel;
 
 
+    std::vector<double> keyframeStamps;
     vector<pcl::PointCloud<PointType>::Ptr> cornerCloudKeyFrames;
     vector<pcl::PointCloud<PointType>::Ptr> surfCloudKeyFrames;
     vector<pcl::PointCloud<PointType>::Ptr> outlierCloudKeyFrames;

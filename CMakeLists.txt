@@ -133,6 +133,7 @@ add_library(lego_loam STATIC
   src/mapping/Lego_Loam/src/mapOptmization.cpp 
   src/mapping/Lego_Loam/src/Scancontext.cpp 
   src/mapping/Lego_Loam/src/utility.cpp
+  src/mapping/Lego_Loam/src/dumpGraph.cpp
 )
 
 target_link_libraries(lego_loam

@@ -15,6 +15,7 @@
 #include "imageProjection.h"
 #include "featureAssociation.h"
 #include "mapOptmization.h"
+#include "dumpGraph.h"
 
 lego_loam::ImageProjection image;
 lego_loam::FeatureAssociation feature;
@@ -49,10 +50,12 @@ bool InteractiveMapping::stop_mapping()
 {
   if (running) {
       running = false;
+      
       mapOpt.endLoopClosure();
+      std::lock_guard<std::mutex> lock(mapping_mutex);
+      dump("/tmp/dump", *(mapOpt.isam), mapOpt.isamCurrentEstimate, mapOpt.keyframeStamps, mapOpt.cornerCloudKeyFrames, mapOpt.surfCloudKeyFrames, mapOpt.outlierCloudKeyFrames);
       mapOpt.allocateMemory();
       image.resetParameters();
-
       mapping_thread.join();
       std::cout << "end mapping!" << std::endl;
     }

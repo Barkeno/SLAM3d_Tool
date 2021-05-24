@@ -139,6 +139,8 @@ void mapOptimization::allocateMemory(){
     globalMapKeyFrames.reset(new pcl::PointCloud<PointType>());
     globalMapKeyFramesDS.reset(new pcl::PointCloud<PointType>());
 
+    timeLaserOdometry = 0;
+
     fullMapCloud.reset(new pcl::PointCloud<PointType>());
 
     timeLaserCloudCornerLast = 0;
@@ -1421,6 +1423,7 @@ void mapOptimization::saveKeyFramesAndFactor(){
     cornerCloudKeyFrames.push_back(thisCornerKeyFrame);
     surfCloudKeyFrames.push_back(thisSurfKeyFrame);
     outlierCloudKeyFrames.push_back(thisOutlierKeyFrame);
+    keyframeStamps.push_back(timeLaserOdometry);
 } // saveKeyFramesAndFactor
 
 
