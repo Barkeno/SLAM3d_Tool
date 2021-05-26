@@ -43,12 +43,12 @@ bool useCloudRing = false; // if true, ang_res_y and ang_bottom are not used
 // int groundScanInd = 7;
 
 // VLP-32
-// int N_SCAN = 32;
-// int Horizon_SCAN = 1800;
-// float ang_res_x = 360.0/float(Horizon_SCAN);
-// float ang_res_y = 40/float(N_SCAN-1);
-// float ang_bottom = 20;
-// int groundScanInd = 12;
+int N_SCAN = 32;
+int Horizon_SCAN = 1800;
+float ang_res_x = 360.0/float(Horizon_SCAN);
+float ang_res_y = 40/float(N_SCAN-1);
+float ang_bottom = 20;
+int groundScanInd = 12;
 
 // HDL-32E
 // extern const int N_SCAN = 32;
@@ -59,12 +59,12 @@ bool useCloudRing = false; // if true, ang_res_y and ang_bottom are not used
 // extern const int groundScanInd = 20;
 
 // VLS-128
-int N_SCAN = 128;
-int Horizon_SCAN = 1800;
-float ang_res_x = 0.2;
-float ang_res_y = 0.3;
-float ang_bottom = 25.0;
-int groundScanInd = 10;
+// int N_SCAN = 128;
+// int Horizon_SCAN = 1800;
+// float ang_res_x = 0.2;
+// float ang_res_y = 0.3;
+// float ang_bottom = 25.0;
+// int groundScanInd = 10;
 
 // Ouster users may need to uncomment line 159 in imageProjection.cpp
 // Usage of Ouster imu data is not fully supported yet (LeGO-LOAM needs 9-DOF IMU), please just publish point cloud data

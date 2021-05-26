@@ -514,10 +514,10 @@ void mapOptimization::saveMapCloud(pcl::PointCloud<PointType> &mapCornerCloud, p
         mapCornerCloud += *transformPointCloud(cornerCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
     }
 
-//    for(int i = 0; i < surfCloudKeyFrames.size(); i++)
-//    {
-//        mapSurfCloud += *transformPointCloud(surfCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
-//    }
+    for(int i = 0; i < surfCloudKeyFrames.size(); i++)
+    {
+        mapCornerCloud += *transformPointCloud(surfCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
+    }
 
 }
 

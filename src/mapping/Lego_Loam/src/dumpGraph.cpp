@@ -31,7 +31,10 @@ void dump(const std::string& dump_directory,
   graph_ofs << "FIX 0" << "\n";
 
   std::cout << "factors:" << isam.getFactorsUnsafe().size() << std::endl;
+  int count = 0;
   for(const auto& factor_: isam.getFactorsUnsafe()) {
+    count++;
+    std::cout << count << std::endl;
     auto between_factor = boost::dynamic_pointer_cast<gtsam::BetweenFactor<gtsam::Pose3>>(factor_);
     if(between_factor) {
       Eigen::Matrix4d relative = between_factor->measured().matrix();
@@ -41,14 +44,24 @@ void dump(const std::string& dump_directory,
       graph_ofs << "EDGE_SE3:QUAT " << between_factor->key1() << " " << between_factor->key2();
       graph_ofs << " " << t.x() << " " << t.y() << " " << t.z() << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w();
 
-      Eigen::VectorXd vars = 1.0 / between_factor->noiseModel()->sigmas().array();
-      Eigen::MatrixXd inf = vars.asDiagonal();
+      // Eigen::VectorXd vars;
+      // Eigen::MatrixXd inf;
+      // if(!between_factor->noiseModel()->sigmas().array().isZero()) 
+      // {
+      //   vars = 1.0 / between_factor->noiseModel()->sigmas().array();
+      //   inf = vars.asDiagonal();
+      // }
+      // else
+      // {
+      //   inf.setZero();
+      // }
+      
 
-      for(int i = 0; i < inf.rows(); i++) {
-        for(int j=i; j<inf.cols(); j++) {
-          graph_ofs << " " << inf(i, j);
-        }
-      }
+      // for(int i = 0; i < inf.rows(); i++) {
+      //   for(int j=i; j<inf.cols(); j++) {
+      //     graph_ofs << " " << inf(i, j);
+      //   }
+      // }
       graph_ofs << "\n";
     }
   }

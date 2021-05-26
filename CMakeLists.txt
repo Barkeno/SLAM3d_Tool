@@ -29,6 +29,8 @@ link_directories(${G2O_LIBRARY_DIRS})
 find_package(OpenCV REQUIRED QUIET)
 find_package(GTSAM REQUIRED QUIET)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/self_msgs)
+
 find_package(catkin REQUIRED COMPONENTS
   tf
   roscpp
@@ -43,6 +45,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   nav_msgs
+
+  self_msgs
 )
 
 
@@ -134,6 +138,7 @@ add_library(lego_loam STATIC
   src/mapping/Lego_Loam/src/Scancontext.cpp 
   src/mapping/Lego_Loam/src/utility.cpp
   src/mapping/Lego_Loam/src/dumpGraph.cpp
+  src/mapping/Lego_Loam/src/wheelOdometry.cpp
 )
 
 target_link_libraries(lego_loam

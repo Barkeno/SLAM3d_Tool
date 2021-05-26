@@ -72,7 +72,7 @@ void InteractiveMapping::mapping()
   rosbag::View::iterator it = view.begin();
   
   int keycount = 0;
-  mapOpt.startLoopClosure();
+  // mapOpt.startLoopClosure();
 
   while (running) 
   {
@@ -116,9 +116,8 @@ void InteractiveMapping::mapping()
           // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
           // mappingkeyframes[0] = keyframe;
           mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
-
+          delete pointCloud2;
       }
-
     }
     usleep(100);
   }
