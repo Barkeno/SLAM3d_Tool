@@ -16,10 +16,12 @@
 #include "featureAssociation.h"
 #include "mapOptmization.h"
 #include "dumpGraph.h"
+#include "wheelOdometry.h"
 
 lego_loam::ImageProjection image;
 lego_loam::FeatureAssociation feature;
 lego_loam::mapOptimization mapOpt;
+lego_loam::WheelOdometry wheelOdm;
 std::string file_directory;
 
 
@@ -68,11 +70,15 @@ void InteractiveMapping::mapping()
   bag.open(file_directory, rosbag::bagmode::Read);
   std::vector<std::string> topics;
   topics.push_back(std::string("/rslidar_points"));
+  topics.push_back(std::string("/wheel_speed"));
+  topics.push_back(std::string("/wheel_rear_left_dir"));
+  topics.push_back(std::string("/wheel_rear_right_dir"));
+
   rosbag::View view(bag, rosbag::TopicQuery(topics));
   rosbag::View::iterator it = view.begin();
   
   int keycount = 0;
-  // mapOpt.startLoopClosure();
+  mapOpt.startLoopClosure();
 
   while (running) 
   {
@@ -91,7 +97,7 @@ void InteractiveMapping::mapping()
           pcl::PointCloud<pcl::PointXYZI> pcs;
           pcl::fromPCLPointCloud2(*pointCloud2, pcs);
 
-          pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud;
+          pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud, nullCloud;
           float PoseAftMapped[6];
 
           image.loadPointCloud(pcs);
@@ -116,7 +122,41 @@ void InteractiveMapping::mapping()
           // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
           // mappingkeyframes[0] = keyframe;
           mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
+          float fx, fy, fthita;
+          wheelOdm.getOdometry(fx, fy, fthita);
+          float PoseWheelOdometry[6];
+          PoseWheelOdometry[5] = fx;
+          PoseWheelOdometry[3] = fy;
+          PoseWheelOdometry[4] = PoseAftMapped[4];
+          PoseWheelOdometry[0] = PoseAftMapped[0];
+          PoseWheelOdometry[1] = PoseAftMapped[1];
+          PoseWheelOdometry[2] = PoseAftMapped[2];
+          
+
+          // mappingkeyframes[1] = std::make_shared<InteractiveKeyFrame>(nullCloud, PoseWheelOdometry);
+
+          std::cout << "WheelOdom: " << "x: " << fx << ", y: " << fy << ", thita: " << fthita << endl;
+          std::cout << "LidarOdom: " << "x: " << PoseAftMapped[5] << ", y: " << PoseAftMapped[3] << endl;
+
           delete pointCloud2;
+      }
+      if(topic == "/wheel_speed")
+      {
+        cout << "wheel_speed " << endl;
+        self_msgs::wheel_speed::ConstPtr msg = m.instantiate<self_msgs::wheel_speed>();
+        wheelOdm.MsgWheelSpeed(msg);
+      }
+      if(topic == "/wheel_rear_left_dir")
+      {
+        cout << "wheel_rear_left_dir " << endl;
+        std_msgs::Int32::ConstPtr msg = m.instantiate<std_msgs::Int32>();
+        wheelOdm.MsgWheelRLDir(msg);
+      }
+      if(topic == "/wheel_rear_right_dir")
+      {
+        cout << "wheel_rear_right_dir " << endl;
+        std_msgs::Int32::ConstPtr msg = m.instantiate<std_msgs::Int32>();
+        wheelOdm.MsgWheelRRDir(msg);
       }
     }
     usleep(100);
