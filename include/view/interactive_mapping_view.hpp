@@ -34,7 +34,7 @@ public:
       // drawables.resize(1);
       // drawables[0] = std::make_shared<MappingKeyFrameView>(keyframe);
 
-       drawables.push_back(std::make_shared<MappingKeyFrameView>(keyframe));
+      drawables.push_back(std::make_shared<MappingKeyFrameView>(keyframe));
 
     }
 

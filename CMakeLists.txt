@@ -62,6 +62,7 @@ include_directories(
   thirdparty/portable-file-dialogs
   thirdparty/ndt_omp/include
   include/mapping/Lego_Loam/include
+  include/mapping/NDT/include
   /opt/ros/melodic/include
   ${GLM_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -130,6 +131,14 @@ add_library(guik STATIC
 ###########
 ## Build ##
 ###########
+add_library(ndt STATIC
+  src/mapping/NDT/src/ndt_mapping.cpp
+)
+
+target_link_libraries(ndt
+    ${PCL_LIBRARIES} 
+    Eigen3::Eigen
+)
 
 add_library(lego_loam STATIC
   src/mapping/Lego_Loam/src/featureAssociation.cpp
@@ -185,6 +194,7 @@ target_link_libraries(interactive_slam
   imgui
   ndt_omp
   lego_loam
+  ndt
 )
 
 file(COPY data DESTINATION .)

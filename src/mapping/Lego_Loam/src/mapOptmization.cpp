@@ -685,11 +685,11 @@ bool mapOptimization::detectLoopClosure(){
         return false;
     }
 
-    // save latest key frames: query ptcloud (corner points + surface points)
-    // NOTE: using "closestHistoryFrameID" to make same root of submap points to get a direct relative between the query point cloud (latestSurfKeyFrameCloud) and the map (nearHistorySurfKeyFrameCloud). by giseop
-    // i.e., set the query point cloud within mapside's local coordinate
-    *SClatestSurfKeyFrameCloud += *transformPointCloud(cornerCloudKeyFrames[latestFrameIDLoopCloure], &cloudKeyPoses6D->points[latestFrameIDLoopCloure]);
-    *SClatestSurfKeyFrameCloud += *transformPointCloud(surfCloudKeyFrames[latestFrameIDLoopCloure],   &cloudKeyPoses6D->points[latestFrameIDLoopCloure]);
+        // save latest key frames: query ptcloud (corner points + surface points)
+        // NOTE: using "closestHistoryFrameID" to make same root of submap points to get a direct relative between the query point cloud (latestSurfKeyFrameCloud) and the map (nearHistorySurfKeyFrameCloud). by giseop
+        // i.e., set the query point cloud within mapside's local coordinate
+        *SClatestSurfKeyFrameCloud += *transformPointCloud(cornerCloudKeyFrames[latestFrameIDLoopCloure], &cloudKeyPoses6D->points[SCclosestHistoryFrameID]);         
+        *SClatestSurfKeyFrameCloud += *transformPointCloud(surfCloudKeyFrames[latestFrameIDLoopCloure],   &cloudKeyPoses6D->points[SCclosestHistoryFrameID]); 
 
     pcl::PointCloud<PointType>::Ptr SChahaCloud(new pcl::PointCloud<PointType>());
     int cloudSize = SClatestSurfKeyFrameCloud->points.size();
@@ -722,6 +722,7 @@ bool mapOptimization::detectLoopClosure(){
 
     return true;
 } // detectLoopClosure
+
 
 
 void mapOptimization::performLoopClosure( void ) {
@@ -762,132 +763,110 @@ void mapOptimization::performLoopClosure( void ) {
     bool isValidRSloopFactor = false;
     bool isValidSCloopFactor = false;
 
-    /*
-        * 1. RS loop factor (radius search)
-        */
-//    if( RSclosestHistoryFrameID != -1 ) {
-//        pcl::IterativeClosestPoint<PointType, PointType> icp;
-//        icp.setMaxCorrespondenceDistance(100);
-//        icp.setMaximumIterations(100);
-//        icp.setTransformationEpsilon(1e-6);
-//        icp.setEuclideanFitnessEpsilon(1e-6);
-//        icp.setRANSACIterations(0);
+        /*
+         * 1. RS loop factor (radius search)
+         */
+        if( RSclosestHistoryFrameID != -1 ) {
+            pcl::IterativeClosestPoint<PointType, PointType> icp;
+            icp.setMaxCorrespondenceDistance(100);
+            icp.setMaximumIterations(100);
+            icp.setTransformationEpsilon(1e-6);
+            icp.setEuclideanFitnessEpsilon(1e-6);
+            icp.setRANSACIterations(0);
 
-//        // Align clouds
-//        icp.setInputSource(RSlatestSurfKeyFrameCloud);
-//        icp.setInputTarget(RSnearHistorySurfKeyFrameCloudDS);
-//        pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
-//        icp.align(*unused_result);
+            // Align clouds
+            icp.setInputSource(RSlatestSurfKeyFrameCloud);
+            icp.setInputTarget(RSnearHistorySurfKeyFrameCloudDS);
+            pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
+            icp.align(*unused_result);
 
-//        std::cout << "[RS] ICP fit score: " << icp.getFitnessScore() << std::endl;
-//        if ( icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore ) {
-//            std::cout << "[RS] Reject this loop (bad icp fit score, > " << historyKeyframeFitnessScore << ")" << std::endl;
-//            isValidRSloopFactor = false;
-//        }
-//        else {
-//            std::cout << "[RS] The detected loop factor is added between Current [ " << latestFrameIDLoopCloure << " ] and RS nearest [ " << RSclosestHistoryFrameID << " ]" << std::endl;
-//            isValidRSloopFactor = true;
-//        }
+            std::cout << "[RS] ICP fit score: " << icp.getFitnessScore() << std::endl;
+            if ( icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore ) {
+                std::cout << "[RS] Reject this loop (bad icp fit score, > " << historyKeyframeFitnessScore << ")" << std::endl;
+                isValidRSloopFactor = false;
+            }
+            else {
+                std::cout << "[RS] The detected loop factor is added between Current [ " << latestFrameIDLoopCloure << " ] and RS nearest [ " << RSclosestHistoryFrameID << " ]" << std::endl;
+                isValidRSloopFactor = true;
+            }
 
-//        if( isValidRSloopFactor == true ) {
-//            correctionCameraFrame = icp.getFinalTransformation(); // get transformation in camera frame (because points are in camera frame)
-//            pcl::getTranslationAndEulerAngles(correctionCameraFrame, x, y, z, roll, pitch, yaw);
-//            Eigen::Affine3f correctionLidarFrame = pcl::getTransformation(z, x, y, yaw, roll, pitch);
-//            // transform from world origin to wrong pose
-//            Eigen::Affine3f tWrong = pclPointToAffine3fCameraToLidar(cloudKeyPoses6D->points[latestFrameIDLoopCloure]);
-//            // transform from world origin to corrected pose
-//            Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+            if( isValidRSloopFactor == true ) {
+                correctionCameraFrame = icp.getFinalTransformation(); // get transformation in camera frame (because points are in camera frame)
+                pcl::getTranslationAndEulerAngles(correctionCameraFrame, x, y, z, roll, pitch, yaw);
+                Eigen::Affine3f correctionLidarFrame = pcl::getTransformation(z, x, y, yaw, roll, pitch);
+                // transform from world origin to wrong pose
+                Eigen::Affine3f tWrong = pclPointToAffine3fCameraToLidar(cloudKeyPoses6D->points[latestFrameIDLoopCloure]);
+                // transform from world origin to corrected pose
+                Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+                pcl::getTranslationAndEulerAngles (tCorrect, x, y, z, roll, pitch, yaw);
+                gtsam::Pose3 poseFrom = Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
+                gtsam::Pose3 poseTo = pclPointTogtsamPose3(cloudKeyPoses6D->points[RSclosestHistoryFrameID]);
+                gtsam::Vector Vector6(6);
 
-//            std::cout << "[RS] tCorrect T: " << "X: " <<  tCorrect.translation().x() << ", Y: " << tCorrect.translation().y() <<
-//                      ", Z: "<< tCorrect.translation().z() << std::endl;
-////            std::cout << "tCorrect R: " << tCorrect.rotation().eulerAngles(0, 1, 2)(0) << ", " << tCorrect.translation().eulerAngles(0, 1, 2)(1) << ", "
-////                      <<  tCorrect.translation().eulerAngles(0, 1, 2)(2) << std::endl;
-
-//            pcl::getTranslationAndEulerAngles (tCorrect, x, y, z, roll, pitch, yaw);
-//            gtsam::Pose3 poseFrom = Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
-//            gtsam::Pose3 poseTo = pclPointTogtsamPose3(cloudKeyPoses6D->points[RSclosestHistoryFrameID]);
-//            gtsam::Vector Vector6(6);
-
-//            gtsam::Pose3 pft = poseFrom.between(poseTo);
-//            std::cout << "[RS] From To: " << "x: " << pft.x() << ", y: " << pft.y() << ", z: " << pft.z() << endl;
-
-//            std::lock_guard<std::mutex> lock(mtx);
-//            gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, RSclosestHistoryFrameID, poseFrom.between(poseTo), robustNoiseModel));
-//            isam->update(gtSAMgraph);
-//            isam->update();
-//            gtSAMgraph.resize(0);
-//        }
-//    }
-
-    /*
-        * 2. SC loop factor (scan context)
-        */
-    if( SCclosestHistoryFrameID != -1 ) {
-        pcl::IterativeClosestPoint<PointType, PointType> icp;
-        icp.setMaxCorrespondenceDistance(100);
-        icp.setMaximumIterations(100);
-        icp.setTransformationEpsilon(1e-6);
-        icp.setEuclideanFitnessEpsilon(1e-6);
-        icp.setRANSACIterations(0);
-
-        // Align clouds
-        // Eigen::Affine3f icpInitialMatFoo = pcl::getTransformation(0, 0, 0, yawDiffRad, 0, 0); // because within cam coord: (z, x, y, yaw, roll, pitch)
-        // Eigen::Matrix4f icpInitialMat = icpInitialMatFoo.matrix();
-        icp.setInputSource(SClatestSurfKeyFrameCloud);
-        icp.setInputTarget(SCnearHistorySurfKeyFrameCloudDS);
-        pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
-        icp.align(*unused_result);
-        // icp.align(*unused_result, icpInitialMat); // PCL icp non-eye initial is bad ... don't use (LeGO LOAM author also said pcl transform is weird.)
-
-        std::cout << "[SC] ICP fit score: " << icp.getFitnessScore() << std::endl;
-        if ( icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore ) {
-            std::cout << "[SC] Reject this loop (bad icp fit score, > " << historyKeyframeFitnessScore << ")" << std::endl;
-            isValidSCloopFactor = false;
-        }
-        else {
-            std::cout << "[SC] The detected loop factor is added between Current [ " << latestFrameIDLoopCloure << " ] and SC nearest [ " << SCclosestHistoryFrameID << " ]" << std::endl;
-            isValidSCloopFactor = true;
+                std::lock_guard<std::mutex> lock(mtx);
+                gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, RSclosestHistoryFrameID, poseFrom.between(poseTo), robustNoiseModel));
+                isam->update(gtSAMgraph);
+                isam->update();
+                gtSAMgraph.resize(0);
+            }
         }
 
-        if( isValidSCloopFactor == true ) {
-            correctionCameraFrame = icp.getFinalTransformation(); // get transformation in camera frame (because points are in camera frame)
+        /*
+         * 2. SC loop factor (scan context)
+         */
+        if( SCclosestHistoryFrameID != -1 ) {
+            pcl::IterativeClosestPoint<PointType, PointType> icp;
+            icp.setMaxCorrespondenceDistance(100);
+            icp.setMaximumIterations(100);
+            icp.setTransformationEpsilon(1e-6);
+            icp.setEuclideanFitnessEpsilon(1e-6);
+            icp.setRANSACIterations(0);
 
-            pcl::getTranslationAndEulerAngles(correctionCameraFrame, x, y, z, roll, pitch, yaw);
-            Eigen::Affine3f correctionLidarFrame = pcl::getTransformation(z, x, y, yaw, roll, pitch);
-            // transform from world origin to wrong pose
-            Eigen::Affine3f tWrong = pclPointToAffine3fCameraToLidar(cloudKeyPoses6D->points[latestFrameIDLoopCloure]);
-            // transform from world origin to corrected pose
-            Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // pre-multiplying -> successive rotation about a fixed frame
+            // Align clouds
+            // Eigen::Affine3f icpInitialMatFoo = pcl::getTransformation(0, 0, 0, yawDiffRad, 0, 0); // because within cam coord: (z, x, y, yaw, roll, pitch)
+            // Eigen::Matrix4f icpInitialMat = icpInitialMatFoo.matrix();
+            icp.setInputSource(SClatestSurfKeyFrameCloud);
+            icp.setInputTarget(SCnearHistorySurfKeyFrameCloudDS);
+            pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
+            icp.align(*unused_result); 
+            // icp.align(*unused_result, icpInitialMat); // PCL icp non-eye initial is bad ... don't use (LeGO LOAM author also said pcl transform is weird.)
 
+            std::cout << "[SC] ICP fit score: " << icp.getFitnessScore() << std::endl;
+            if ( icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore ) {
+                std::cout << "[SC] Reject this loop (bad icp fit score, > " << historyKeyframeFitnessScore << ")" << std::endl;
+                isValidSCloopFactor = false;
+            }
+            else {
+                std::cout << "[SC] The detected loop factor is added between Current [ " << latestFrameIDLoopCloure << " ] and SC nearest [ " << SCclosestHistoryFrameID << " ]" << std::endl;
+                isValidSCloopFactor = true;
+            }
 
-            pcl::getTranslationAndEulerAngles (tCorrect, x, y, z, roll, pitch, yaw);
-            gtsam::Pose3 poseFrom = Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
-            gtsam::Pose3 poseTo = pclPointTogtsamPose3(cloudKeyPoses6D->points[SCclosestHistoryFrameID]);
-            
-            std::cout << "[SC] Loop Pose: " << "x: " << x << ", y: " << y << ", z: " << z << endl;
-            gtsam::Pose3 pft = poseFrom.between(poseTo);
-            std::cout << "[SC] From To: " << "x: " << pft.x() << ", y: " << pft.y() << ", z: " << pft.z() << endl;
-
-            std::lock_guard<std::mutex> lock(mtx);
-//             gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, SCclosestHistoryFrameID, poseFrom.between(poseTo), constraintNoise)); // original
-            gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, SCclosestHistoryFrameID, poseFrom.between(poseTo), robustNoiseModel)); // giseop
-            isam->update(gtSAMgraph);
-            isam->update();
-            gtSAMgraph.resize(0);
+            if( isValidSCloopFactor == true ) {
+                correctionCameraFrame = icp.getFinalTransformation(); // get transformation in camera frame (because points are in camera frame)
+                pcl::getTranslationAndEulerAngles (correctionCameraFrame, x, y, z, roll, pitch, yaw);
+                gtsam::Pose3 poseFrom = Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
+                gtsam::Pose3 poseTo = Pose3(Rot3::RzRyRx(0.0, 0.0, 0.0), Point3(0.0, 0.0, 0.0));
+                
+                std::lock_guard<std::mutex> lock(mtx);
+                // gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, closestHistoryFrameID, poseFrom.between(poseTo), constraintNoise)); // original 
+                gtSAMgraph.add(BetweenFactor<Pose3>(latestFrameIDLoopCloure, SCclosestHistoryFrameID, poseFrom.between(poseTo), robustNoiseModel)); // giseop
+                isam->update(gtSAMgraph);
+                isam->update();
+                gtSAMgraph.resize(0);
+            }
         }
-    }
 
-    // just for visualization
-    // // publish corrected cloud
-    // if (pubIcpKeyFrames.getNumSubscribers() != 0){
-    //     pcl::PointCloud<PointType>::Ptr closed_cloud(new pcl::PointCloud<PointType>());
-    //     pcl::transformPointCloud (*latestSurfKeyFrameCloud, *closed_cloud, icp.getFinalTransformation());
-    //     sensor_msgs::PointCloud2 cloudMsgTemp;
-    //     pcl::toROSMsg(*closed_cloud, cloudMsgTemp);
-    //     cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-    //     cloudMsgTemp.header.frame_id = "/camera_init";
-    //     pubIcpKeyFrames.publish(cloudMsgTemp);
-    // }   
+        // just for visualization
+        // // publish corrected cloud
+        // if (pubIcpKeyFrames.getNumSubscribers() != 0){
+        //     pcl::PointCloud<PointType>::Ptr closed_cloud(new pcl::PointCloud<PointType>());
+        //     pcl::transformPointCloud (*latestSurfKeyFrameCloud, *closed_cloud, icp.getFinalTransformation());
+        //     sensor_msgs::PointCloud2 cloudMsgTemp;
+        //     pcl::toROSMsg(*closed_cloud, cloudMsgTemp);
+        //     cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
+        //     cloudMsgTemp.header.frame_id = "/camera_init";
+        //     pubIcpKeyFrames.publish(cloudMsgTemp);
+        // }   
 
     // flagging
     aLoopIsClosed = true;
