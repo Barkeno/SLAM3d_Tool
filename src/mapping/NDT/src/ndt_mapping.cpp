@@ -51,6 +51,7 @@ ndt_mapping::ndt_mapping()
   min_scan_range_ = 5.0;
   max_scan_range_ = 200.0;
   use_imu_ = false;
+  use_wheelOdom_ = false;
 
 
   initial_scan_loaded = 0;
@@ -178,6 +179,13 @@ void ndt_mapping::ndt_odometry(const sensor_msgs::PointCloud2::ConstPtr& input, 
     ndt.setInputTarget(map_ptr);
     is_first_map_ = false;
   }
+
+  // if(use_wheelOdom_)
+  // {
+  //   current_pose_.x
+  //   current_pose_.y
+  //   current_pose_.yaw
+  // }
 
   Eigen::Translation3f init_translation(current_pose_.x, current_pose_.y, current_pose_.z);
   Eigen::AngleAxisf init_rotation_x(current_pose_.roll, Eigen::Vector3f::UnitX());

@@ -77,6 +77,7 @@ private:
   double min_scan_range_;
   double max_scan_range_;
   bool use_imu_;
+  bool use_wheelOdom_;
 
   // ros::Publisher ndt_map_pub_, current_pose_pub_;
   geometry_msgs::PoseStamped current_pose_msg_;

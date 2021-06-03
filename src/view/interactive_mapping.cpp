@@ -19,6 +19,8 @@
 #include "wheelOdometry.h"
 
 #include "ndt_mapping.h"
+// #define USENDTODOM
+#define USEWHEELODOM
 
 lego_loam::ImageProjection image;
 lego_loam::FeatureAssociation feature;
@@ -108,6 +110,10 @@ void InteractiveMapping::mapping()
 #ifdef USENDTODOM
           ndtOdom.ndt_odometry(pclmsg, PoseAftNdtOdom);
 #endif
+#ifdef USEWHEELODOM
+          float fx, fy, fthita;
+          wheelOdm.getOdometry(fx, fy, fthita);
+#endif
 
           image.loadPointCloud(pcs);
 
@@ -119,6 +125,14 @@ void InteractiveMapping::mapping()
           feature.transformSum[3] = PoseAftNdtOdom[3];
           feature.transformSum[4] = PoseAftNdtOdom[4];
           feature.transformSum[5] = PoseAftNdtOdom[5];
+#endif
+#ifdef USEWHEELODOM
+          // feature.transformSum[0] = 0;
+          // feature.transformSum[1] = 0;
+          // feature.transformSum[2] = fthita;
+          // feature.transformSum[3] = fy;
+          // feature.transformSum[4] = 0;
+          // feature.transformSum[5] = fx;
 #endif
           mapOpt.mapBuild(feature, pcs, mapCornerCloud, mapSurfCloud, PoseAftMapped);
           
@@ -136,11 +150,8 @@ void InteractiveMapping::mapping()
 
 
           std::lock_guard<std::mutex> lock(mapping_mutex);
-          // InteractiveKeyFrame::Ptr keyframe = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
-          // mappingkeyframes[0] = keyframe;
-          // mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
-          float fx, fy, fthita;
-          wheelOdm.getOdometry(fx, fy, fthita);
+          
+#ifdef USEWHEELODOM
           float PoseWheelOdometry[6];
           PoseWheelOdometry[5] = fx;
           PoseWheelOdometry[3] = fy;
@@ -148,12 +159,18 @@ void InteractiveMapping::mapping()
           PoseWheelOdometry[0] = PoseAftMapped[0];
           PoseWheelOdometry[1] = PoseAftMapped[1];
           PoseWheelOdometry[2] = PoseAftMapped[2];
-          
+#endif
+
+#ifdef USEWHEELODOM          
           mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(nullCloud, PoseWheelOdometry);
           mappingkeyframes[1] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
+#else
+          mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(mapCornerCloud, PoseAftMapped);
+#endif
 
-          std::cout << "WheelOdom: " << "x: " << fx << ", y: " << fy << ", thita: " << fthita << endl;
-          std::cout << "LidarOdom: " << "x: " << PoseAftMapped[5] << ", y: " << PoseAftMapped[3] << endl;
+
+          // std::cout << "WheelOdom: " << "x: " << fx << ", y: " << fy << ", thita: " << fthita << endl;
+          // std::cout << "LidarOdom: " << "x: " << PoseAftMapped[5] << ", y: " << PoseAftMapped[3] << endl;
 
           delete pointCloud2;
       }
